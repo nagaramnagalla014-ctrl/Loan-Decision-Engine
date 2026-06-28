@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loan-engine-config
+  namespace: loan-engine
+data:
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service:5432/loan_decision_engine"
+  SPRING_DATASOURCE_USERNAME: "postgres"
+  SPRING_REDIS_HOST: "redis-service"
+  SPRING_REDIS_PORT: "6379"
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka-service:9092"
+  JAVA_TOOL_OPTIONS: "--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED"

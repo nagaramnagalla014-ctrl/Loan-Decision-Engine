@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Loan Decision Engine</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <a class="navbar-brand font-weight-bold" href="#"><i class="fas fa-balance-scale mr-2"></i>Loan Decision Engine</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navMenu">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navMenu">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('home')">Home</a></li>
+      <li class="nav-item auth-only d-none"><a class="nav-link" href="#" onclick="showPage('apply')">Apply</a></li>
+      <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('track')">Track Application</a></li>
+      <li class="nav-item staff-only d-none"><a class="nav-link" href="#" onclick="showPage('queue')">Review Queue</a></li>
+      <li class="nav-item staff-only d-none"><a class="nav-link" href="#" onclick="showPage('rules')">Manage Rules</a></li>
+      <li class="nav-item staff-only d-none"><a class="nav-link" href="#" onclick="showPage('admin')">Dashboard</a></li>
+    </ul>
+    <ul class="navbar-nav">
+      <li class="nav-item d-none" id="userNav">
+        <span class="navbar-text text-light mr-3" id="userGreeting"></span>
+        <a class="nav-link d-inline" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </li>
+      <li class="nav-item guest-only">
+        <a class="nav-link" href="#" onclick="showPage('login')"><i class="fas fa-sign-in-alt"></i> Login</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Alert Banner -->
+<div id="alertBanner" class="d-none"></div>
+
+<!-- Pages -->
+<div id="page-home">
+  <div class="jumbotron jumbotron-fluid bg-gradient text-white mb-0">
+    <div class="container text-center py-5">
+      <h1 class="display-4 font-weight-bold"><i class="fas fa-robot mr-3"></i>Intelligent Loan Decisions</h1>
+      <p class="lead mt-3">Rule-based engine evaluating thousands of applications daily.<br/>Business teams update lending policies instantly — no deployments needed.</p>
+      <div class="mt-4">
+        <button class="btn btn-light btn-lg mr-3 auth-only d-none" onclick="showPage('apply')"><i class="fas fa-file-alt mr-2"></i>Apply Now</button>
+        <button class="btn btn-outline-light btn-lg guest-only" onclick="showPage('login')"><i class="fas fa-sign-in-alt mr-2"></i>Get Started</button>
+        <button class="btn btn-outline-light btn-lg ml-2" onclick="showPage('track')"><i class="fas fa-search mr-2"></i>Track Application</button>
+      </div>
+    </div>
+  </div>
+  <div class="container mt-5">
+    <div class="row text-center">
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-4 h-100">
+          <i class="fas fa-bolt fa-3x text-warning mb-3"></i>
+          <h5>Instant Decisions</h5>
+          <p class="text-muted">Applications evaluated in milliseconds using the Drools rules engine</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-4 h-100">
+          <i class="fas fa-sliders-h fa-3x text-primary mb-3"></i>
+          <h5>No-Code Rule Updates</h5>
+          <p class="text-muted">Business teams modify lending criteria through the rules UI without IT involvement</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-4 h-100">
+          <i class="fas fa-stream fa-3x text-success mb-3"></i>
+          <h5>Event-Driven</h5>
+          <p class="text-muted">Kafka events broadcast decisions to downstream systems in real time</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-4 h-100">
+          <i class="fas fa-user-shield fa-3x text-danger mb-3"></i>
+          <h5>Human Oversight</h5>
+          <p class="text-muted">Edge cases are routed to analyst review queue with full decision context</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-login" class="d-none">
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-5">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white"><h5 class="mb-0"><i class="fas fa-lock mr-2"></i>Login</h5></div>
+          <div class="card-body">
+            <form onsubmit="doLogin(event)">
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" class="form-control" placeholder="email@example.com" required/>
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" class="form-control" required/>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Login</button>
+            </form>
+            <hr/>
+            <p class="text-center mb-0">No account? <a href="#" onclick="showPage('register')">Register here</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-register" class="d-none">
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-header bg-success text-white"><h5 class="mb-0"><i class="fas fa-user-plus mr-2"></i>Create Account</h5></div>
+          <div class="card-body">
+            <form onsubmit="doRegister(event)">
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label>First Name</label>
+                  <input type="text" id="regFirst" class="form-control" required/>
+                </div>
+                <div class="form-group col-md-6">
+                  <label>Last Name</label>
+                  <input type="text" id="regLast" class="form-control" required/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="regEmail" class="form-control" required/>
+              </div>
+              <div class="form-group">
+                <label>Password <small class="text-muted">(min 8 characters)</small></label>
+                <input type="password" id="regPassword" class="form-control" minlength="8" required/>
+              </div>
+              <div class="form-group">
+                <label>Phone (optional)</label>
+                <input type="tel" id="regPhone" class="form-control"/>
+              </div>
+              <button type="submit" class="btn btn-success btn-block">Create Account</button>
+            </form>
+            <hr/>
+            <p class="text-center mb-0">Already have an account? <a href="#" onclick="showPage('login')">Login</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-apply" class="d-none">
+  <div class="container mt-4">
+    <h3 class="mb-4"><i class="fas fa-file-alt mr-2 text-primary"></i>Loan Application</h3>
+    <form id="loanForm" onsubmit="submitLoan(event)">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light"><h6 class="mb-0">Loan Details</h6></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label>Loan Type</label>
+              <select id="loanType" class="form-control" required>
+                <option value="">Select type</option>
+                <option value="PERSONAL">Personal Loan</option>
+                <option value="MORTGAGE">Mortgage</option>
+                <option value="AUTO">Auto Loan</option>
+                <option value="BUSINESS">Business Loan</option>
+              </select>
+            </div>
+            <div class="form-group col-md-4">
+              <label>Requested Amount ($)</label>
+              <input type="number" id="requestedAmount" class="form-control" min="1000" step="100" required/>
+            </div>
+            <div class="form-group col-md-4">
+              <label>Loan Term (months)</label>
+              <select id="termMonths" class="form-control" required>
+                <option value="">Select term</option>
+                <option value="12">12 months</option>
+                <option value="24">24 months</option>
+                <option value="36">36 months</option>
+                <option value="48">48 months</option>
+                <option value="60">60 months</option>
+                <option value="84">84 months</option>
+                <option value="120">120 months</option>
+                <option value="180">180 months</option>
+                <option value="240">240 months</option>
+                <option value="360">360 months</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Loan Purpose</label>
+            <textarea id="loanPurpose" class="form-control" rows="2" maxlength="1000"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light"><h6 class="mb-0">Personal Information</h6></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label>First Name</label>
+              <input type="text" id="appFirst" class="form-control" required/>
+            </div>
+            <div class="form-group col-md-6">
+              <label>Last Name</label>
+              <input type="text" id="appLast" class="form-control" required/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label>Email</label>
+              <input type="email" id="appEmail" class="form-control" required/>
+            </div>
+            <div class="form-group col-md-6">
+              <label>Phone</label>
+              <input type="tel" id="appPhone" class="form-control"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light"><h6 class="mb-0">Financial Information</h6></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label>Annual Income ($)</label>
+              <input type="number" id="annualIncome" class="form-control" min="1" step="100" required/>
+            </div>
+            <div class="form-group col-md-4">
+              <label>Monthly Debt Payments ($)</label>
+              <input type="number" id="monthlyDebtPayments" class="form-control" min="0" step="10" required/>
+            </div>
+            <div class="form-group col-md-4">
+              <label>Credit Score</label>
+              <input type="number" id="creditScore" class="form-control" min="300" max="850" required/>
+              <small class="text-muted">300 (poor) — 850 (excellent)</small>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label>Employment Type</label>
+              <select id="employmentType" class="form-control" required>
+                <option value="">Select status</option>
+                <option value="EMPLOYED">Employed (Full-time)</option>
+                <option value="SELF_EMPLOYED">Self-Employed</option>
+                <option value="RETIRED">Retired</option>
+                <option value="UNEMPLOYED">Unemployed</option>
+              </select>
+            </div>
+            <div class="form-group col-md-4">
+              <label>Years at Current Job</label>
+              <input type="number" id="yearsAtJob" class="form-control" min="0" max="50" value="0"/>
+            </div>
+            <div class="form-group col-md-4">
+              <label>Collateral Value ($) <small class="text-muted">(if applicable)</small></label>
+              <input type="number" id="collateralValue" class="form-control" min="0" step="1000" value="0"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg">
+        <i class="fas fa-paper-plane mr-2"></i>Submit Application
+      </button>
+    </form>
+
+    <div id="decisionResult" class="d-none mt-4"></div>
+  </div>
+</div>
+
+<div id="page-track" class="d-none">
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-header bg-info text-white"><h5 class="mb-0"><i class="fas fa-search mr-2"></i>Track Application</h5></div>
+          <div class="card-body">
+            <form onsubmit="trackApplication(event)">
+              <div class="form-group">
+                <label>Application Number</label>
+                <input type="text" id="trackNumber" class="form-control" placeholder="APP-20210415-AB12CD" required/>
+              </div>
+              <button type="submit" class="btn btn-info btn-block text-white">Track</button>
+            </form>
+          </div>
+        </div>
+        <div id="trackResult" class="mt-4"></div>
+      </div>
+    </div>
+    <div class="auth-only d-none mt-4">
+      <h5 class="mb-3">My Applications</h5>
+      <div id="myApplicationsList"></div>
+    </div>
+  </div>
+</div>
+
+<div id="page-queue" class="d-none">
+  <div class="container mt-4">
+    <h3 class="mb-4"><i class="fas fa-tasks mr-2 text-warning"></i>Manual Review Queue</h3>
+    <div id="reviewQueue"></div>
+    <div id="reviewModal" class="d-none mt-4">
+      <div class="card shadow-sm border-warning">
+        <div class="card-header bg-warning"><h6 class="mb-0">Review Application <span id="reviewAppNumber"></span></h6></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>Decision</label>
+            <select id="reviewDecision" class="form-control">
+              <option value="APPROVED">Approve</option>
+              <option value="REJECTED">Reject</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Approved Amount ($) — for approvals</label>
+            <input type="number" id="reviewAmount" class="form-control" min="0" step="100"/>
+          </div>
+          <div class="form-group">
+            <label>Interest Rate (%) — for approvals</label>
+            <input type="number" id="reviewRate" class="form-control" min="0" max="30" step="0.25"/>
+          </div>
+          <div class="form-group">
+            <label>Review Notes</label>
+            <textarea id="reviewNotes" class="form-control" rows="3"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="submitReview()">Submit Decision</button>
+          <button class="btn btn-secondary ml-2" onclick="cancelReview()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-rules" class="d-none">
+  <div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3><i class="fas fa-sliders-h mr-2 text-primary"></i>Lending Rules</h3>
+      <div>
+        <span class="badge badge-info mr-2" id="engineVersionBadge"></span>
+        <button class="btn btn-primary btn-sm" onclick="showRuleForm()"><i class="fas fa-plus mr-1"></i>New Rule</button>
+      </div>
+    </div>
+    <div id="rulesTable"></div>
+    <div id="ruleForm" class="d-none mt-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white"><h6 class="mb-0" id="ruleFormTitle">Add Rule</h6></div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label>Rule Name <small class="text-muted">(unique identifier)</small></label>
+              <input type="text" id="rfName" class="form-control" placeholder="reject_high_dti"/>
+            </div>
+            <div class="form-group col-md-4">
+              <label>Category</label>
+              <select id="rfCategory" class="form-control">
+                <option value="CREDIT_SCORE">Credit Score</option>
+                <option value="DEBT_TO_INCOME">Debt to Income</option>
+                <option value="EMPLOYMENT">Employment</option>
+                <option value="LOAN_AMOUNT">Loan Amount</option>
+                <option value="INTEREST_RATE">Interest Rate</option>
+                <option value="RISK_SCORE">Risk Score</option>
+              </select>
+            </div>
+            <div class="form-group col-md-4">
+              <label>Salience (priority)</label>
+              <input type="number" id="rfSalience" class="form-control" value="50"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" id="rfDesc" class="form-control"/>
+          </div>
+          <div class="form-group">
+            <label>DRL Content <small class="text-muted">(Drools Rule Language)</small></label>
+            <textarea id="rfDrl" class="form-control drl-editor" rows="12" spellcheck="false"></textarea>
+          </div>
+          <div class="form-check mb-3">
+            <input type="checkbox" id="rfActive" class="form-check-input" checked/>
+            <label class="form-check-label" for="rfActive">Active</label>
+          </div>
+          <button class="btn btn-primary" onclick="saveRule()"><i class="fas fa-save mr-1"></i>Save Rule</button>
+          <button class="btn btn-secondary ml-2" onclick="cancelRuleForm()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-admin" class="d-none">
+  <div class="container-fluid mt-4">
+    <h3 class="mb-4"><i class="fas fa-tachometer-alt mr-2 text-danger"></i>Admin Dashboard</h3>
+    <div id="adminStats" class="row mb-4"></div>
+    <ul class="nav nav-tabs mb-3" id="adminTabs">
+      <li class="nav-item"><a class="nav-link active" href="#" onclick="loadAdminTab('applications', this)">Applications</a></li>
+      <li class="nav-item"><a class="nav-link" href="#" onclick="loadAdminTab('users', this)">Users</a></li>
+    </ul>
+    <div id="adminTabContent"></div>
+  </div>
+</div>
+
+<footer class="footer mt-5 py-3 bg-light border-top">
+  <div class="container text-center text-muted">
+    <small>Loan Decision Engine &mdash; Java 17 &bull; Spring Boot 2.6.3 &bull; Drools 7.73 &bull; PostgreSQL &bull; Kafka &bull; Redis &bull; Kubernetes</small>
+  </div>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loan-backend
+  namespace: loan-engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: loan-backend
+  template:
+    metadata:
+      labels:
+        app: loan-backend
+    spec:
+      containers:
+        - name: backend
+          image: loan-decision-engine-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: loan-engine-config
+            - secretRef:
+                name: loan-engine-secrets
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 45
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 30
+          resources:
+            requests:
+              memory: "768Mi"
+              cpu: "250m"
+            limits:
+              memory: "1.5Gi"
+              cpu: "750m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: loan-engine
+spec:
+  selector:
+    app: loan-backend
+  ports:
+    - port: 8080
+      targetPort: 8080

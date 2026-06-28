@@ -1,0 +1,34 @@
+package com.loan.decisionengine.config;
+
+import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.TopicBuilder;
+
+@Configuration
+public class KafkaConfig {
+
+    @Bean
+    public NewTopic loanApplicationSubmittedTopic() {
+        return TopicBuilder.name("loan-application-submitted")
+                .partitions(3).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic loanDecisionCompletedTopic() {
+        return TopicBuilder.name("loan-decision-completed")
+                .partitions(3).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic ruleUpdateNotificationTopic() {
+        return TopicBuilder.name("rule-update-notification")
+                .partitions(1).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic loanManualReviewTopic() {
+        return TopicBuilder.name("loan-manual-review")
+                .partitions(2).replicas(1).build();
+    }
+}

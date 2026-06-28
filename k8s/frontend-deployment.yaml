@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loan-frontend
+  namespace: loan-engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: loan-frontend
+  template:
+    metadata:
+      labels:
+        app: loan-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: loan-decision-engine-frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: loan-engine
+spec:
+  selector:
+    app: loan-frontend
+  ports:
+    - port: 80
+      targetPort: 80
